@@ -6,7 +6,7 @@ import Edit from "@mui/icons-material/Edit";
 import Delete from "@mui/icons-material/Delete";
 import { DataContext } from "../../context/DataProvider";
 import Comments from "./Comments/comments";
-
+import { Snackbar, Alert } from "@mui/material";
 const Container = styled(Box)`
   margin: 50px 100px;
 `;
@@ -56,6 +56,18 @@ const DetailView = () => {
   const { id } = useParams();
   const { account } = useContext(DataContext);
   const navigate = useNavigate();
+  const [openAlert, setOpenAlert] = useState(false);
+  const [alertDetails, setAlertDetails] = useState({
+    severity: "",
+    message: "",
+  });
+
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenAlert(false);
+  };
 
   useEffect(() => {
     const fetchBlogData = async () => {
@@ -75,15 +87,24 @@ const DetailView = () => {
 
   const deleteBlogHandler = async (event) => {
     try {
-      console.log("inside function");
       let response = await fetch(`http://localhost:8000/api/delete/${id}`, {
         method: "DELETE",
       });
       if (!response.ok) throw new Error("Deletion Failed");
-      console.log("Blog Deleted Sucessfully");
-      navigate("/");
+      const alert = alertDetails;
+      alert.severity = "success";
+      alert.message = "Blog Deleted Successfully Redirecting to Home Page";
+      setAlertDetails(alert);
+      setOpenAlert(true);
+      setTimeout(() => {
+        navigate("/");
+      }, 4000);
     } catch (error) {
-      console.log(error);
+      const alert = alertDetails;
+      alert.severity = "error";
+      alert.message = "Blog Deletion Unsuccessful";
+      setAlertDetails(alert);
+      setOpenAlert(true);
     }
   };
 
@@ -126,7 +147,22 @@ const DetailView = () => {
           </Typography>
         </Author>
         <Description>{blogData.description}</Description>
-        <Comments blogData = {blogData}></Comments>
+        <Comments blogData={blogData}></Comments>
+        <Snackbar
+          open={openAlert}
+          autoHideDuration={3000}
+          onClose={handleClose}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <Alert
+            severity={alertDetails.severity}
+            onClose={handleClose}
+            variant="filled"
+            elevation={6}
+          >
+            {alertDetails.message}
+          </Alert>
+        </Snackbar>
       </Container>
     </Fragment>
   );

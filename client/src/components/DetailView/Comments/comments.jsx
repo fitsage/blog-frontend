@@ -5,6 +5,7 @@ import { DataContext } from "../../../context/DataProvider";
 import { useParams } from "react-router-dom";
 import CircularJSON from "circular-json";
 import DisplayComments from "./DisplayComments";
+import { Snackbar, Alert } from "@mui/material";
 
 const Container = styled(Box)`
   margin-top: 100px;
@@ -37,6 +38,18 @@ export const Comments = ({ blogData }) => {
   const { account } = useContext(DataContext);
   const { id } = useParams();
   const [toggle, setToggle] = useState(false);
+  const [openAlert, setOpenAlert] = useState(false);
+  const [alertDetails, setAlertDetails] = useState({
+    severity: "",
+    message: "",
+  });
+
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenAlert(false);
+  };
 
   useEffect(() => {
     const fetchAllComments = async () => {
@@ -76,10 +89,18 @@ export const Comments = ({ blogData }) => {
       if (!response.ok) throw new Error("Fetching failed");
 
       setCommentData(initialCommentData);
-      console.log("Comment Saved Successfully");
+      const alert = alertDetails;
+      alert.severity = "success";
+      alert.message = "Comment Added Successfully";
+      setAlertDetails(alert);
+      setOpenAlert(true);
       setToggle((prevState) => !prevState);
     } catch (error) {
-      console.log(error);
+      const alert = alertDetails;
+      alert.severity = "error";
+      alert.message = "Comment Addition Unsuccessful";
+      setAlertDetails(alert);
+      setOpenAlert(true);
     }
   };
 
@@ -118,6 +139,36 @@ export const Comments = ({ blogData }) => {
               );
             })}
       </Box>
+      <Snackbar
+        open={openAlert}
+        autoHideDuration={4000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity={alertDetails.severity}
+          onClose={handleClose}
+          variant="filled"
+          elevation={6}
+        >
+          {alertDetails.message}
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={openAlert}
+        autoHideDuration={2000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity={alertDetails.severity}
+          onClose={handleClose}
+          variant="filled"
+          elevation={6}
+        >
+          {alertDetails.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

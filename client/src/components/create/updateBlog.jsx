@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
+import { Snackbar, Alert } from "@mui/material";
 const Image = styled("img")({
   height: "30vh",
   margin: "auto",
@@ -59,6 +59,18 @@ const UpdateBlog = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const url = "https://i.ibb.co/JxYn8h2/blog-Image2.png";
+  const [openAlert, setOpenAlert] = useState(false);
+  const [alertDetails, setAlertDetails] = useState({
+    severity: "",
+    message: "",
+  });
+
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenAlert(false);
+  };
 
   useEffect(() => {
     const fetchBlogData = async () => {
@@ -90,8 +102,14 @@ const UpdateBlog = () => {
         body: JSON.stringify(blog),
       });
       if (!response.ok) throw new Error("Updating Failed");
-      console.log("Blog Created Sucessfully");
-      navigate(`/details/${id}`);
+      const alert = alertDetails;
+      alert.severity = "success";
+      alert.message = "Blog Updated Successfully Redirecting to Blog";
+      setAlertDetails(alert);
+      setOpenAlert(true);
+      setTimeout(() => {
+        navigate(`/details/${id}`);
+      }, 3000);
     } catch (error) {
       console.log(error);
     }
@@ -120,6 +138,21 @@ const UpdateBlog = () => {
         name="description"
         value={blog.description}
       ></TextArea>
+      <Snackbar
+        open={openAlert}
+        autoHideDuration={2000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity={alertDetails.severity}
+          onClose={handleClose}
+          variant="filled"
+          elevation={6}
+        >
+          {alertDetails.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

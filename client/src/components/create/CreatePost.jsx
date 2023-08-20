@@ -10,6 +10,7 @@ import {
 import { useState, useEffect, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { DataContext } from "../../context/DataProvider";
+import { Snackbar, Alert } from "@mui/material";
 
 const Image = styled("img")({
   height: "30vh",
@@ -58,13 +59,23 @@ const intialBlog = {
 
 const CreatePost = () => {
   const [blog, setBlog] = useState(intialBlog);
-  const [file, setFile] = useState("");
-
+  const [openAlert, setOpenAlert] = useState(false);
+  const [alertDetails, setAlertDetails] = useState({
+    severity: "",
+    message: "",
+  });
   const { account } = useContext(DataContext);
   const location = useLocation();
   const navigate = useNavigate();
 
   const url = "https://i.ibb.co/JxYn8h2/blog-Image2.png";
+
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenAlert(false);
+  };
 
   const dataChangeHandler = (event) => {
     setBlog({ ...blog, [event.target.name]: event.target.value });
@@ -89,10 +100,22 @@ const CreatePost = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("Blog created Successfully");
-        navigate("/");
+        const alert = alertDetails;
+        alert.severity = "success";
+        alert.message = "Blog Created Successfully Redirecting to Home Page";
+        setAlertDetails(alert);
+        setOpenAlert(true);
+        setTimeout(() => {
+          navigate("/");
+        }, 4000);
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        const alert = alertDetails;
+        alert.severity = "error";
+        alert.message = "Blog Creation Unsuccessful";
+        setAlertDetails(alert);
+        setOpenAlert(true);
+      });
   };
 
   return (
@@ -116,6 +139,21 @@ const CreatePost = () => {
         onChange={dataChangeHandler}
         name="description"
       ></TextArea>
+      <Snackbar
+        open={openAlert}
+        autoHideDuration={3000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity={alertDetails.severity}
+          onClose={handleClose}
+          variant="filled"
+          elevation={6}
+        >
+          {alertDetails.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

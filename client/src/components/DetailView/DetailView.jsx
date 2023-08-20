@@ -5,6 +5,7 @@ import { useEffect, useState, useContext } from "react";
 import Edit from "@mui/icons-material/Edit";
 import Delete from "@mui/icons-material/Delete";
 import { DataContext } from "../../context/DataProvider";
+import Comments from "./Comments/comments";
 
 const Container = styled(Box)`
   margin: 50px 100px;
@@ -125,6 +126,7 @@ const DetailView = () => {
           </Typography>
         </Author>
         <Description>{blogData.description}</Description>
+        <Comments blogData = {blogData}></Comments>
       </Container>
     </Fragment>
   );

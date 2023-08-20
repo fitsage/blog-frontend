@@ -1,7 +1,8 @@
 import { Box, Typography, styled } from "@mui/material";
 import Delete from "@mui/icons-material/Delete";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { DataContext } from "../../../context/DataProvider";
+import { Snackbar, Alert } from "@mui/material";
 
 const Component = styled(Box)`
   margin-top: 30px;
@@ -29,10 +30,21 @@ const DeleteIcon = styled(Delete)`
 `;
 const DisplayComments = ({ comment, setToggle }) => {
   const { account } = useContext(DataContext);
+  const [openAlert, setOpenAlert] = useState(false);
+  const [alertDetails, setAlertDetails] = useState({
+    severity: "",
+    message: "",
+  });
+
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenAlert(false);
+  };
 
   const deleteCommentHandler = async () => {
     try {
-      console.log(comment._id);
       const response = await fetch(
         `http://localhost:8000/api/deleteComment/${comment._id}`,
         {
@@ -40,10 +52,18 @@ const DisplayComments = ({ comment, setToggle }) => {
         }
       );
       if (!response.ok) throw new Error("Comment Deletion Failed");
-      console.log("Comment Deleted Successfully");
+      const alert = alertDetails;
+      alert.severity = "success";
+      alert.message = "Comment Deleted Successfully";
+      setAlertDetails(alert);
+      setOpenAlert(true);
       setToggle((prevState) => !prevState);
     } catch (error) {
-      console.log(error);
+      const alert = alertDetails;
+      alert.severity = "error";
+      alert.message = "Comment Deletion Failed";
+      setAlertDetails(alert);
+      setOpenAlert(true);
     }
   };
 
@@ -59,6 +79,21 @@ const DisplayComments = ({ comment, setToggle }) => {
       <Box>
         <Typography>{comment.commentDescription}</Typography>
       </Box>
+      <Snackbar
+        open={openAlert}
+        autoHideDuration={2000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity={alertDetails.severity}
+          onClose={handleClose}
+          variant="filled"
+          elevation={6}
+        >
+          {alertDetails.message}
+        </Alert>
+      </Snackbar>
     </Component>
   );
 };

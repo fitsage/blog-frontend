@@ -3,6 +3,7 @@ import { Box, TextField, Button, styled, Typography } from "@mui/material"; //Bo
 //TextField is analogus to input in html of MUI
 import { DataContext } from "../../context/DataProvider";
 import { useNavigate } from "react-router-dom";
+import { Snackbar, Alert } from "@mui/material";
 /*We are styling the box component using styled components.
 Now Component stores the Box with provided Css*/
 const Component = styled(Box)`
@@ -67,15 +68,17 @@ const Login = ({ isUserAuthenticated }) => {
   const [name, setName] = useState("");
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
-  const [signUpError, setSignUpError] = useState(false);
   const [loginError, setLoginError] = useState(false);
-
+  const [openAlert, setOpenAlert] = useState(false);
+  const [alertDetails, setAlertDetails] = useState({
+    severity: "",
+    message: "",
+  });
   const { setAccount } = useContext(DataContext);
   /*Intializing Navigation */
   const navigate = useNavigate();
   /*toggle Handler */
   const toggleSignUpHandler = () => {
-    setSignUpError(false);
     account === "login" ? toggleAccount("signup") : toggleAccount("login");
   };
 
@@ -110,14 +113,12 @@ and event.target.value would give you the value of the input field when the valu
       body: JSON.stringify(userData),
     })
       .then((response) => {
-        console.log(response);
         if (!response.ok) {
           throw new Error("Either userName or Password is Wrong");
         }
         return response.json();
       })
       .then((data) => {
-        console.log("User Details Verified Successfully");
         // Extract the data from the parsed JSON response
         const accessToken = data.accessToken;
         const refreshToken = data.refreshToken;
@@ -134,7 +135,11 @@ and event.target.value would give you the value of the input field when the valu
         navigate("/");
       })
       .catch((error) => {
-        console.log(error);
+        const alert = alertDetails;
+        alert.severity = "error";
+        alert.message = "login Failed";
+        setAlertDetails(alert);
+        setOpenAlert(true);
       });
   };
   const signUpHandler = (event) => {
@@ -157,13 +162,29 @@ and event.target.value would give you the value of the input field when the valu
         return response.json();
       })
       .then((data) => {
-        console.log("Singup sucessful");
+        const alert = alertDetails;
+        alert.severity = "success";
+        alert.message = "SignUp Sucessful, Please login";
+        setAlertDetails(alert);
+        setOpenAlert(true);
+        toggleAccount("login");
       })
       .catch((error) => {
-        setSignUpError(true);
-        console.log(error);
+        const alert = alertDetails;
+        alert.severity = "error";
+        alert.message = "Any Field missing or userName Already Taken";
+        setAlertDetails(alert);
+        setOpenAlert(true);
       });
   };
+
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenAlert(false);
+  };
+
   return (
     <Component>
       <Box>
@@ -209,11 +230,6 @@ and event.target.value would give you the value of the input field when the valu
               label="Enter Password"
               onChange={passwordChangeHandler}
             ></TextField>
-            {signUpError && (
-              <SignUpError>
-                Any Field is missing or userName already taken
-              </SignUpError>
-            )}
             <CustomButton variant="contained" onClick={signUpHandler}>
               Sign Up
             </CustomButton>
@@ -223,6 +239,22 @@ and event.target.value would give you the value of the input field when the valu
           </Wrapper>
         )}
       </Box>
+
+      <Snackbar
+        open={openAlert}
+        autoHideDuration={4000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity={alertDetails.severity}
+          onClose={handleClose}
+          variant="filled"
+          elevation={6}
+        >
+          {alertDetails.message}
+        </Alert>
+      </Snackbar>
     </Component>
   );
 };

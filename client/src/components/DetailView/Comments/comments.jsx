@@ -22,6 +22,10 @@ const StyledTextArea = styled(TextareaAutosize)`
   height: 100px;
   width: 100%;
   margin: 0 20px;
+  background-color: #f5f5f5;
+  &:focus-visible {
+    outline: none;
+  }
 `;
 
 const initialCommentData = {
@@ -109,7 +113,7 @@ export const Comments = ({ blogData }) => {
       <Container>
         <Image src={url} alt="dp"></Image>
         <StyledTextArea
-          minRows={5}
+          minRows={3}
           placeholder="What's you think of blog"
           value={commentData.commentDescription}
           onChange={commentChangeHandler}
